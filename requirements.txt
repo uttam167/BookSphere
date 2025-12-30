@@ -1,4 +1,5 @@
-flask
+Flask
 mysql-connector-python
-werkzeug
+python-dotenv
 gunicorn
+python-dotenv
