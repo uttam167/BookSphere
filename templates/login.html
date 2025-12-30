@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BooksSphere - Login</title>
+    <link rel="stylesheet" href="/static/css/modern-ui.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="d-flex align-items-center min-vh-100 p-3 p-md-5">
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center align-items-center h-100">
+            <div class="col-12 col-sm-10 col-md-6 col-lg-5 col-xl-4 animate__animated animate__fadeInUp">
+                <div class="glass-card p-4 p-md-5 text-center mx-auto w-100" style="max-width:450px;">
+                    <h2 class="mb-4"><i class="bi bi-book-half me-2"></i>BooksSphere</h2>
+                    
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="alert alert-warning animate__animated animate__shakeX mb-4">{{ messages[0] }}</div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <form action="/login" method="post" class="needs-validation" novalidate>
+                        <div class="mb-3 mb-md-4">
+                            <input type="email" name="email" 
+                                   class="form-control bg-transparent border-0 border-bottom border-white border-opacity-50 py-3 px-0 text-center fs-5 fs-md-6" 
+                                   placeholder="📧 Email" required>
+                        </div>
+                        <div class="mb-4 mb-md-5">
+                            <input type="password" name="password" 
+                                   class="form-control bg-transparent border-0 border-bottom border-white border-opacity-50 py-3 px-0 text-center fs-5 fs-md-6" 
+                                   placeholder="🔒 Password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-4 py-3 fs-5 fw-bold animate__animated">
+                            🚀 Login
+                        </button>
+                    </form>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="/register" class="text-decoration-none fw-medium">New User? Register</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+    @media (max-width: 576px) {
+        body { padding: 10px !important; }
+        .glass-card { 
+            margin: 10px !important; 
+            padding: 25px 20px !important; 
+            border-radius: 25px !important;
+        }
+        .form-control { 
+            font-size: 18px !important; 
+            background: rgba(255,255,255,0.05) !important;
+            border-radius: 15px !important;
+            padding: 20px 15px !important;
+            margin-bottom: 20px !important;
+        }
+        .btn-primary { 
+            border-radius: 30px !important; 
+            padding: 18px !important;
+            font-size: 18px !important;
+        }
+        h2 { font-size: 28px !important; }
+    }
+    </style>
+</body>
+</html>

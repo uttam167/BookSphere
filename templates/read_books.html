@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Books - BooksSphere</title>
+    <link rel="stylesheet" href="/static/css/modern-ui.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="p-3 p-md-5">
+    <div class="container-fluid">
+        <div class="glass-card p-5 mb-5 text-center">
+            <h1 class="display-4 mb-0"><i class="bi bi-bookshelf me-2"></i>📚 All Books</h1>
+            <p class="lead mt-3 opacity-75">Complete library collection</p>
+        </div>
+
+        <div class="row g-4">
+            {% for b in books %}
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="book-card h-100 animate__animated animate__fadeInUp">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-book display-4 text-primary opacity-50"></i>
+                        </div>
+                        <h4 class="mb-3 text-center">{{ b.title }}</h4>
+                        <p class="text-muted text-center mb-4">{{ b.author }}</p>
+                        <div class="d-grid gap-2">
+                            <a href="/read/{{ b.id }}" class="btn btn-primary">
+                                <i class="bi bi-book-open me-2"></i>Read Now
+                            </a>
+                            <button class="btn btn-outline-light">
+                                <i class="bi bi-heart me-2"></i>Add to Favorites
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="glass-card p-4 mt-5 text-center">
+            <a href="/dashboard" class="btn btn-outline-light btn-lg px-5">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</body>
+</html>
