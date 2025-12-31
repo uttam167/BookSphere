@@ -294,6 +294,18 @@ def add_book():
             )
         )
     return redirect("/admin")
+@app.route("/admin/users")
+def admin_users():
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    users = execute(
+        "SELECT id, name, email, role, status FROM users ORDER BY id DESC",
+        fetch=True
+    )
+
+    return render_template("admin_users.html", users=users)
+
 
 @app.route("/toggle-premium/<int:book_id>/<int:status>")
 def toggle_premium(book_id, status):
