@@ -312,6 +312,55 @@ def toggle_premium(book_id, status):
     if session.get("role") == "admin":
         execute("UPDATE books SET is_premium=? WHERE id=?", (status, book_id))
     return redirect("/admin")
+@app.route("/favorites")
+def favorites():
+    if "user_id" not in session:
+        return redirect("/")
+
+    favorites = execute("""
+        SELECT b.* FROM books b
+        JOIN favorites f ON b.id = f.book_id
+        WHERE f.user_id=?
+        ORDER BY f.created_at DESC
+    """, (session["user_id"],), fetch=True)
+
+    return render_template(
+        "favorites.html",
+        favorites=favorites,
+        user_name=session["name"]
+    )
+@app.route("/read-books")
+def read_books():
+    if "user_id" not in session:
+        return redirect("/")
+
+    books = execute("SELECT * FROM books ORDER BY title", fetch=True)
+    return render_template("read_books.html", books=books)
+@app.route("/payment")
+def payment():
+    if "user_id" not in session:
+        return redirect("/")
+    return render_template("payment.html")
+@app.route("/read/<int:book_id>")
+def read_book(book_id):
+    if "user_id" not in session:
+        return redirect("/")
+
+    book = execute(
+        "SELECT * FROM books WHERE id=?",
+        (book_id,), fetch=True, one=True
+    )
+
+    if not book:
+        flash("❌ Book not found")
+        return redirect("/dashboard")
+
+    if book["is_premium"] == 1 and not session.get("is_premium"):
+        flash("🔒 Premium required")
+        return redirect("/payment")
+
+    return redirect(book["read_link"])
+
 
 @app.route("/logout")
 def logout():
