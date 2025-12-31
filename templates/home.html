@@ -1,0 +1,10 @@
+<h2>Free Books</h2>
+
+{% for book in books %}
+  <p>
+    <b>{{ book.title }}</b> – {{ book.author }}
+    <a href="{{ book.read_link }}" target="_blank">Read</a>
+  </p>
+{% endfor %}
+
+<a href="/login">Login</a> | <a href="/register">Register</a>

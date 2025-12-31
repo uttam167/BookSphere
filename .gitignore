@@ -2,3 +2,4 @@ app.env
 .env
 *.db
 __pycache__/
+database.db
