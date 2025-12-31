@@ -145,7 +145,7 @@ def register():
             "INSERT INTO users (name,email,password) VALUES (%s,%s,%s)",
             (name, email, password)
         )
-        flash("✅ Registered, wait for approval")
+        flash("✅ Registered Ho Gaya Ya to Admin ko MSG kro Ya, wait for approval")
         return redirect("/")
 
     return render_template("register.html")
