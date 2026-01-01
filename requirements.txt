@@ -1,6 +1,4 @@
 Flask
-mysql-connector-python
-python-dotenv
 gunicorn
 python-dotenv
 psycopg2-binary
