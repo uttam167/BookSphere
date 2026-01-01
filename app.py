@@ -63,7 +63,14 @@ def create_admin():
         )
         print("✅ ADMIN CREATED")
 
-create_admin()
+@app.route("/init-admin")
+def init_admin():
+    if os.getenv("ADMIN_INIT_KEY") != request.args.get("key"):
+        return "Unauthorized", 403
+    create_admin()
+    return "Admin created"
+
+
 
 # ==========================
 # EMAIL
