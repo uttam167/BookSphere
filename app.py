@@ -4,17 +4,14 @@ from psycopg2.extras import RealDictCursor
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "super-secret-key"
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
 
 # ==========================
-# DATABASE (Supabase PostgreSQL)
+# DATABASE
 # ==========================
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -25,10 +22,10 @@ def get_db():
         sslmode="require"
     )
 
-def execute(query, params=None, fetch=False, one=False):
+def execute(query, params=(), fetch=False, one=False):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(query, params or ())
+    cur.execute(query, params)
     data = None
     if fetch:
         data = cur.fetchone() if one else cur.fetchall()
@@ -38,7 +35,7 @@ def execute(query, params=None, fetch=False, one=False):
     return data
 
 # ==========================
-# AUTO CREATE ADMIN
+# INIT ADMIN (SAFE)
 # ==========================
 def create_admin():
     admin = execute(
@@ -61,38 +58,13 @@ def create_admin():
                 "approved"
             )
         )
-        print("✅ ADMIN CREATED")
 
 @app.route("/init-admin")
 def init_admin():
-    if os.getenv("ADMIN_INIT_KEY") != request.args.get("key"):
+    if request.args.get("key") != os.getenv("ADMIN_INIT_KEY"):
         return "Unauthorized", 403
     create_admin()
     return "Admin created"
-
-
-
-# ==========================
-# EMAIL
-# ==========================
-GMAIL_USER = os.getenv("GMAIL_USER")
-GMAIL_PASS = os.getenv("GMAIL_PASS")
-
-def send_feedback_email(name, email, message, rating):
-    try:
-        msg = MIMEMultipart()
-        msg["From"] = GMAIL_USER
-        msg["To"] = GMAIL_USER
-        msg["Subject"] = f"BooksSphere Feedback ({rating}/5)"
-        msg.attach(MIMEText(message, "plain"))
-
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(GMAIL_USER, GMAIL_PASS)
-        server.send_message(msg)
-        server.quit()
-    except:
-        pass
 
 # ==========================
 # ROUTES
@@ -107,29 +79,40 @@ def login():
     password = request.form["password"]
 
     user = execute(
-        "SELECT * FROM users WHERE email=%s AND status='approved'",
+        "SELECT * FROM users WHERE email=%s",
         (email,),
         fetch=True,
         one=True
     )
 
-    if user and check_password_hash(user["password"], password):
-        session["user_id"] = user["id"]
-        session["name"] = user["name"]
-        session["role"] = user["role"]
+    if not user:
+        flash("❌ User not found")
+        return redirect("/")
 
+    if user["status"] != "approved":
+        flash("⏳ Admin approval pending")
+        return redirect("/")
+
+    if not check_password_hash(user["password"], password):
+        flash("❌ Wrong password")
+        return redirect("/")
+
+    session["user_id"] = user["id"]
+    session["name"] = user["name"]
+    session["role"] = user["role"]
+
+    try:
         premium = execute(
-            "SELECT * FROM premium_users WHERE user_id=%s AND expiry_date >= CURRENT_DATE",
+            "SELECT id FROM premium_users WHERE user_id=%s AND expiry_date >= CURRENT_DATE",
             (user["id"],),
             fetch=True,
             one=True
         )
         session["is_premium"] = True if premium else False
+    except:
+        session["is_premium"] = False
 
-        return redirect("/admin" if user["role"] == "admin" else "/dashboard")
-
-    flash("❌ Invalid login")
-    return redirect("/")
+    return redirect("/admin" if user["role"] == "admin" else "/dashboard")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -145,14 +128,14 @@ def register():
             one=True
         )
         if exists:
-            flash("❌ Email exists")
+            flash("❌ Email already exists")
             return redirect("/register")
 
         execute(
-            "INSERT INTO users (name,email,password) VALUES (%s,%s,%s)",
+            "INSERT INTO users (name,email,password,status) VALUES (%s,%s,%s,'pending')",
             (name, email, password)
         )
-        flash("✅ Registered Ho Gaya Ya to Admin ko MSG kro Ya, wait for approval")
+        flash("✅ Registered! Admin approval required")
         return redirect("/")
 
     return render_template("register.html")
@@ -218,10 +201,7 @@ def approve_user(user_id):
 def add_book():
     if session.get("role") == "admin":
         execute(
-            """
-            INSERT INTO books (title,author,read_link)
-            VALUES (%s,%s,%s)
-            """,
+            "INSERT INTO books (title,author,read_link) VALUES (%s,%s,%s)",
             (
                 request.form["title"],
                 request.form["author"],
